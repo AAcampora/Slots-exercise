@@ -41,18 +41,13 @@ export class SpinButton extends Container {
 	}
 
 	public fadeOut(): void {
-		this._texture.visible = false;
+		gsap.to(this._texture, {
+			duration: 0.2,
+			alpha: 0,
+		});
 		gsap.to(this._disabledTexture, {
 			duration: 0.2,
 			alpha: 1,
-		});
-	}
-
-	public fadeIn(): void {
-		this._texture.visible = true;
-		gsap.to(this._disabledTexture, {
-			duration: 0.2,
-			alpha: 0,
 		});
 	}
 }

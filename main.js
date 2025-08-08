@@ -1,6 +1,7 @@
 import { Application, Graphics, Text, TextStyle, Assets, Sprite } from 'pixi.js';
 import { ReelGroup } from './ts/reels/ReelGroup';
 import { ViewMetrics } from './ts/constants/ViewMetrics';
+import { Game } from './ts/Game';
 
 //entry point of application
 (async () => {
@@ -19,13 +20,13 @@ import { ViewMetrics } from './ts/constants/ViewMetrics';
 
 	document.body.appendChild(app.canvas);
 
-	const gameReel = new ReelGroup();
-	gameReel.init();
-	app.stage.addChild(gameReel);
+	const game = new Game();
+	game.init();
+	app.stage.addChild(game);
 
 	window.addEventListener('keydown', (event) => {
 		if (event.code === 'Space') {
-			gameReel.startSpinning();
+			game.startSpinning();
 		}
 	});
 })();

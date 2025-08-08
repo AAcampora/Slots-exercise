@@ -6,6 +6,7 @@ import { ReelConstants } from '../constants/ReelConstants';
 import { SpinButton } from '../components/SpinButton';
 import { BalanceDisplay } from '../components/BalanceDisplay';
 import { WinDisplay } from '../components/WinDisplay';
+import { Button } from '../components/Button.ts';
 
 export class ReelGroup extends Container {
 	private _reelFrame!: Sprite;
@@ -14,6 +15,9 @@ export class ReelGroup extends Container {
 	private _spinButton: SpinButton;
 	private _balanceDisplay: BalanceDisplay;
 	private _winDisplay: WinDisplay;
+	private _addBalanceButton: Button;
+	private _removeBalanceButton: Button;
+	private _setToMinimumBalanceButton: Button;
 
 	private _canSpin: boolean = true;
 
@@ -52,6 +56,21 @@ export class ReelGroup extends Container {
 		await this._winDisplay.init();
 		this._winDisplay.position.set(70, 200);
 		this.addChild(this._winDisplay);
+
+		this._addBalanceButton = new Button();
+		this._addBalanceButton.position.set(-400, 0);
+		await this._addBalanceButton.init('max Balance', 200, 46, this.addBalance.bind(this));
+		this.addChild(this._addBalanceButton);
+
+		this._removeBalanceButton = new Button();
+		this._removeBalanceButton.position.set(-400, 80);
+		await this._removeBalanceButton.init('no Balance', 200, 46, this.removeBalance.bind(this));
+		this.addChild(this._removeBalanceButton);
+
+		this._removeBalanceButton = new Button();
+		this._removeBalanceButton.position.set(-400, 160);
+		await this._removeBalanceButton.init('set to minimum Balance', 350, 46, this.setToMinimumBalance.bind(this));
+		this.addChild(this._removeBalanceButton);
 	}
 
 	private async makeReelFrame(): Promise<void> {
@@ -99,5 +118,23 @@ export class ReelGroup extends Container {
 		if (this._balance === 0) {
 			this._spinButton.fadeOut();
 		}
+	}
+
+	private addBalance(): void {
+		this._balance = 100;
+		this._balanceDisplay.setBalance(this._balance);
+		this._spinButton.fadeIn();
+	}
+
+	private removeBalance(): void {
+		this._balance = 0;
+		this._balanceDisplay.setBalance(this._balance);
+		this._spinButton.fadeOut();
+	}
+
+	private setToMinimumBalance(): void {
+		this._balance = 1;
+		this._balanceDisplay.setBalance(this._balance);
+		this._spinButton.fadeIn();
 	}
 }

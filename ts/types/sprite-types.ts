@@ -15,3 +15,7 @@ export enum GameSpinButton {
 	PLAY = 'assets/PLAY.png',
 	PLAY_DISABLED = 'assets/PLAY_DISABLED.png',
 }
+
+export enum GameWinBackground {
+	WIN_BG = 'assets/WIN_BG.png',
+}

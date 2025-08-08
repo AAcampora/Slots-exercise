@@ -4,10 +4,12 @@ import { GameSymbol } from '../gameSymbols/GameSymbol';
 import { ReelConstants } from '../constants/ReelConstants';
 import gsap, { Power1 } from 'gsap';
 import { Signal } from 'signals';
+import { GameSymbolsTexture } from '../types/sprite-types';
 
 export class SymbolPool extends Container {
 	private _gameSymbolPool: GameSymbol[] = [];
 	private _visibleSymbolPool: GameSymbol[] = [];
+	public win: string[] = [];
 	public spinCompleteSignal: Signal = new Signal();
 
 	private _reelStop: number = 0;
@@ -23,7 +25,10 @@ export class SymbolPool extends Container {
 
 	public async init(): Promise<void> {
 		ReelMatrix.forEach((symbol, i) => {
-			const gameSymbol = new GameSymbol({ texture: symbol });
+			const id = Object.keys(GameSymbolsTexture).find(
+				(key) => GameSymbolsTexture[key as keyof typeof GameSymbolsTexture] === symbol
+			);
+			const gameSymbol = new GameSymbol({ texture: symbol, id: id! });
 			this._gameSymbolPool.push(gameSymbol);
 		});
 	}
@@ -85,7 +90,10 @@ export class SymbolPool extends Container {
 
 	private slowDownAndStop(): void {
 		Ticker.shared.remove(this.spinUpdate, this);
-		this._visibleSymbolPool.forEach((symbol) => {
+		this._visibleSymbolPool.forEach((symbol, i) => {
+			if (i !== 0 && i !== this._visibleSymbolPool.length - 1) {
+				this.win.push(symbol.id);
+			}
 			gsap.to([symbol], {
 				duration: 0.3,
 				y: symbol.y + ReelConstants.SYMBOL_HEIGHT / 2,
@@ -148,6 +156,7 @@ export class SymbolPool extends Container {
 
 	private reset(): void {
 		this._speedTimeline = gsap.timeline();
+		this.win = [];
 		this.slamStopActive = false;
 		this.canSlamStop = false;
 		this._needsToStop = false;

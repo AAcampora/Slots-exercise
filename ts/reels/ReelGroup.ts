@@ -58,7 +58,7 @@ export class ReelGroup extends Container {
 	}
 
 	public startSpinning(): void {
-		this._symbolPool.spinCompleteSignal.addOnce(this.resetSpin, this);
+		this._symbolPool.spinCompleteSignal.addOnce(this.onSpinComplete, this);
 		//handle slam stop
 		if (!this._canSpin && !this._symbolPool.slamStopActive && this._symbolPool.canSlamStop) {
 			this._symbolPool.slamStop();
@@ -72,8 +72,13 @@ export class ReelGroup extends Container {
 		this._canSpin = false;
 	}
 
-	private resetSpin(): void {
+	private onSpinComplete(): void {
 		this._canSpin = true;
+		const maxCount = Math.max(
+			...this._symbolPool.win.map((v) => this._symbolPool.win.filter((x) => x === v).length)
+		);
+		this._balance = maxCount > 1 ? this._balance + maxCount : this._balance;
+		this._balanceDisplay.setBalance(this._balance);
 		this._spinButton.fadeIn();
 	}
 }

@@ -1,5 +1,4 @@
-import { Assets, Container, Graphics, Point, Sprite, Text } from 'pixi.js';
-import { GameWinBackground } from '../types/sprite-types';
+import { Container, Graphics, Text } from 'pixi.js';
 import gsap from 'gsap';
 
 export class Button extends Container {

@@ -13,7 +13,9 @@ export class ReelGroup extends Container {
 		await this.makeReelFrame();
 
 		this.symbolPool = new SymbolPool();
+
 		this.createMask();
+
 		await this.symbolPool.init();
 		await this.symbolPool.populateVisibleSymbols();
 		this.symbolPool.position.y = -120;

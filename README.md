@@ -1,11 +1,11 @@
 # Slots-exercise
-small exericise in Pixi
+small exercise in Pixi
 
 Setup:
 - clone repository
 - open terminal
-- use <npm i> command to install all necessary packages
+- use *npm i* command to install all necessary packages
 
 Build:
-- use <npx> vite to build application,
-- open localhost from the url generated in terminal.
+- use *npx vite* to build application,
+- Open localhost from the URL generated in the terminal.

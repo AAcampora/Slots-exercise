@@ -3,11 +3,13 @@ import { GameReelTexture } from '../types/sprite-types';
 import { ViewMetrics } from '../constants/ViewMetrics';
 import { SymbolPool } from './SymbolPool';
 import { ReelConstants } from '../constants/ReelConstants';
+import { SpinButton } from '../components/SpinButton';
 
 export class ReelGroup extends Container {
 	private _reelFrame!: Sprite;
 	private _reelMask: Graphics;
 	private _symbolPool: SymbolPool;
+	private _spinButton: SpinButton;
 
 	private canSpin: boolean = true;
 
@@ -25,6 +27,11 @@ export class ReelGroup extends Container {
 
 		this.position.x = ViewMetrics.CANVAS_MIDDLE_WIDTH;
 		this.position.y = ViewMetrics.CANVAS_MIDDLE_HEIGHT - this._reelFrame.height / 2;
+
+		this._spinButton = new SpinButton();
+		this._spinButton.position.set(200, 250);
+		await this._spinButton.init(this.startSpinning.bind(this));
+		this.addChild(this._spinButton);
 	}
 
 	private async makeReelFrame(): Promise<void> {
@@ -40,14 +47,15 @@ export class ReelGroup extends Container {
 		this.addChild(this._reelMask);
 	}
 
-	public startSpinning(reelStop: number): void {
+	public startSpinning(): void {
 		this._symbolPool.spinCompleteSignal.addOnce(this.resetSpin, this);
 
 		//handle slam stop
 		if (!this.canSpin && !this._symbolPool.slamStopActive && this._symbolPool.canSlamStop) {
 			this._symbolPool.slamStop();
+			this._spinButton.fadeOut();
 		} else if (this.canSpin) {
-			this._symbolPool.startSpinning(reelStop);
+			this._symbolPool.startSpinning(Math.round(Math.random() * 100));
 		}
 
 		this.canSpin = false;
@@ -55,5 +63,6 @@ export class ReelGroup extends Container {
 
 	private resetSpin(): void {
 		this.canSpin = true;
+		this._spinButton.fadeIn();
 	}
 }

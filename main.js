@@ -25,7 +25,7 @@ import { ViewMetrics } from './ts/constants/ViewMetrics';
 
 	window.addEventListener('keydown', (event) => {
 		if (event.code === 'Space') {
-			gameReel.startSpinning(Math.round(Math.random() * 100));
+			gameReel.startSpinning();
 		}
 	});
 })();

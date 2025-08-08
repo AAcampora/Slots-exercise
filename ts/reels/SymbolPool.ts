@@ -2,18 +2,24 @@ import { Container, Ticker } from 'pixi.js';
 import { ReelMatrix } from '../constants/ReelMatrix';
 import { GameSymbol } from '../gameSymbols/GameSymbol';
 import { ReelConstants } from '../constants/ReelConstants';
-import gsap from 'gsap';
+import gsap, { Power1 } from 'gsap';
+import { Signal } from 'signals';
 
 export class SymbolPool extends Container {
 	private _gameSymbolPool: GameSymbol[] = [];
 	private _visibleSymbolPool: GameSymbol[] = [];
+	public spinCompleteSignal: Signal = new Signal();
 
 	private _reelStop: number = 0;
 	private _reelIndex: number = 0;
 
-	private _needsToStop: boolean;
+	private _currentSpeed = { value: 60 };
 
-	public isSpinning: boolean;
+	private _needsToStop: boolean = false;
+	public slamStopActive: boolean;
+	public canSlamStop: boolean;
+
+	private _speedTimeline: GSAPTimeline;
 
 	public async init(): Promise<void> {
 		ReelMatrix.forEach((symbol, i) => {
@@ -33,15 +39,48 @@ export class SymbolPool extends Container {
 	}
 
 	public startSpinning(reelStop: number): void {
+		this.reset();
 		this._reelStop = reelStop;
-		Ticker.shared.add(this.spinUpdate, this);
-		this.isSpinning = true;
-		//after 2 seconds, we prepare the reel so it stops in the correct spot
-		gsap.delayedCall(2.5, () => {
-			//prepare the next 5 symbols to be the correct ones on the reel stop
-			this._reelIndex = this._reelStop - ReelConstants.NUM_ROWS;
-			this._needsToStop = true;
+		this._visibleSymbolPool.forEach((symbol) => {
+			gsap.to([symbol], {
+				duration: 0.2,
+				y: symbol.y - ReelConstants.SYMBOL_HEIGHT / 2,
+				ease: 'linear',
+			});
 		});
+		gsap.delayedCall(0.3, () => {
+			this.spinReel();
+			this.canSlamStop = true;
+		});
+	}
+
+	private spinReel(): void {
+		this._currentSpeed.value = 60;
+		Ticker.shared.add(this.spinUpdate, this);
+		//after 2 seconds, we prepare the reel so it stops in the correct spot
+		this._speedTimeline.to(this._currentSpeed, {
+			value: 10,
+			duration: 1.3,
+			ease: Power1.easeInOut,
+			onComplete: () => {
+				this.prepareReelStop();
+			},
+		});
+	}
+
+	private prepareReelStop(): void {
+		//prepare the next 5 symbols to be the correct ones on the reel stop
+		this._reelIndex =
+			this._reelStop < ReelConstants.NUM_ROWS ? this._gameSymbolPool.length - 5 : this._reelStop - 5;
+		this._needsToStop = true;
+	}
+
+	public slamStop(): void {
+		this._speedTimeline.kill();
+		this.slamStopActive = true;
+		this.canSlamStop = false;
+		this._currentSpeed.value = 80;
+		this.prepareReelStop();
 	}
 
 	private slowDownAndStop(): void {
@@ -58,12 +97,12 @@ export class SymbolPool extends Container {
 	}
 
 	private SnapBackReel(): void {
-		this._visibleSymbolPool.forEach((symbol) => {
+		this._visibleSymbolPool.forEach((symbol, i) => {
 			gsap.to([symbol], {
 				duration: 0.2,
-				y: symbol.y - ReelConstants.SYMBOL_HEIGHT / 2,
+				y: ReelConstants.SYMBOL_HEIGHT * i,
 				onComplete: () => {
-					this.isSpinning = false;
+					this.spinCompleteSignal.dispatch();
 				},
 			});
 		});
@@ -71,7 +110,7 @@ export class SymbolPool extends Container {
 
 	public spinUpdate(): void {
 		this._visibleSymbolPool.forEach((symbol) => {
-			symbol.y += 10; // move down
+			symbol.y += this._currentSpeed.value; // move down
 
 			// When symbol leaves bottom
 			if (symbol.y >= ReelConstants.NUM_ROWS * ReelConstants.SYMBOL_HEIGHT) {
@@ -82,7 +121,7 @@ export class SymbolPool extends Container {
 
 	private recycleSymbol(symbol: GameSymbol): void {
 		// Remove the symbol from visible pool (filter out the one to recycle)
-		this._visibleSymbolPool = this._visibleSymbolPool.filter((s) => s !== symbol);
+		this._visibleSymbolPool.pop();
 		this.removeChild(symbol);
 
 		//increment reel index
@@ -104,7 +143,13 @@ export class SymbolPool extends Container {
 
 		if (this._reelIndex === this._reelStop && this._needsToStop) {
 			this.slowDownAndStop();
-			this._needsToStop = false;
 		}
+	}
+
+	private reset(): void {
+		this._speedTimeline = gsap.timeline();
+		this.slamStopActive = false;
+		this.canSlamStop = false;
+		this._needsToStop = false;
 	}
 }

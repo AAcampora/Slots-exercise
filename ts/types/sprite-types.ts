@@ -10,3 +10,8 @@ export enum GameSymbolsTexture {
 export enum GameReelTexture {
 	REEL = 'assets/REEL.png',
 }
+
+export enum GameSpinButton {
+	PLAY = 'assets/PLAY.png',
+	PLAY_DISABLED = 'assets/PLAY_DISABLED.png',
+}

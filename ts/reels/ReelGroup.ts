@@ -9,6 +9,8 @@ export class ReelGroup extends Container {
 	private _reelMask: Graphics;
 	private _symbolPool: SymbolPool;
 
+	private canSpin: boolean = true;
+
 	public async init(): Promise<void> {
 		await this.makeReelFrame();
 
@@ -39,8 +41,19 @@ export class ReelGroup extends Container {
 	}
 
 	public startSpinning(reelStop: number): void {
-		if (!this._symbolPool.isSpinning) {
+		this._symbolPool.spinCompleteSignal.addOnce(this.resetSpin, this);
+
+		//handle slam stop
+		if (!this.canSpin && !this._symbolPool.slamStopActive && this._symbolPool.canSlamStop) {
+			this._symbolPool.slamStop();
+		} else if (this.canSpin) {
 			this._symbolPool.startSpinning(reelStop);
 		}
+
+		this.canSpin = false;
+	}
+
+	private resetSpin(): void {
+		this.canSpin = true;
 	}
 }

@@ -4,8 +4,8 @@ small exercise in Pixi
 Setup:
 - clone repository
 - open terminal
-- use *npm i* command to install all necessary packages
+- use **npm i** command to install all necessary packages
 
 Build:
-- use *npx vite* to build application,
+- use **npx vite** to build application,
 - Open localhost from the URL generated in the terminal.
